@@ -40,6 +40,7 @@ test: all
 clean:
 	rm -rf $(OBJ_DIR)
 
+# Ressources
 directories: $(OBJ_DIR) $(BIN_DIR)
 
 $(OBJ_DIR):
@@ -47,6 +48,7 @@ $(OBJ_DIR):
 $(BIN_DIR):
 	mkdir -p $@
 
+# Output
 $(TARGET): $(OBJECT_FILES)
 	$(LD) -o $(OUTPUT) $^
 	$(FIX) -v -p0 $(OUTPUT)
