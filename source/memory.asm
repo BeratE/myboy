@@ -33,8 +33,8 @@
 
 ;If all of these are already defined, don't do it again.
 
-        IF      !DEF(MEMORY_INC)
-MEMORY_INC  SET  1
+        IF      !DEF(MEMORY_ASM)
+MEMORY_ASM  SET  1
 
 rev_Check_memory_asm: MACRO
 ;NOTE: REVISION NUMBER CHANGES MUST BE ADDED
@@ -184,4 +184,4 @@ mem_CopyVRAM::
 
 
 
-        ENDC    ; MEMORY_INC
+        ENDC    ; MEMORY_ASM

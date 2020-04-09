@@ -11,7 +11,7 @@ ASM     := rgbasm
 LD      := rgblink
 FIX     := rgbfix
 ASFLAGS := -i $(INC_DIR)
-LDFLAGS :=
+LDFLAGS := --dmg --tiny --wramx
 
 SRC_EXT := asm
 INC_EXT := inc

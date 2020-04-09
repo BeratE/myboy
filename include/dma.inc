@@ -1,26 +1,16 @@
+;;;; dma.inc
+;;;; DMA copy to hram and sync
 
 	IF !DEF(DMA_INC)
-	; don't re-include this file if it's already been INCLUDE'd
 DMA_INC = 1
 
-DMA_ROUTINE	= $FF80	; Internal (HI)RAM
-OAMDATALOC	= _RAM ; set first 160 bytes of RAM to hold OAM variables
-OAMDATALOCBANK	= OAMDATALOC / $100 ; used by DMA_ROUTINE to point to _RAM
-
-; Export Symbols
-EXPORT DMA_ROUTINE, OAMDATALOC, OAMDATALOCBANK
-
 	
-dma_Copy2HRAM: MACRO
-	
-; Copies the DMAcode to HIRAM. DMAcode will get run each Vblank,
-; and it is resposible for copying sprite data from RAM to VRAM.
-
+dma_CopyToHRAM: MACRO
 	jr	.copy_dma_into_memory\@
 ; -------------------- DMA CODE BEGIN --------------------------------------------	
 .dmacode\@	
 	push	af
-	ld	a, OAMDATALOCBANK
+	ld	a, OAMSHADOWBANK
 	ldh	[rDMA], a
 	ld	a, $28 	; countdown until DMA is finished, then exit
 .dma_wait\@			;<-|
@@ -38,4 +28,4 @@ dma_Copy2HRAM: MACRO
 	call	mem_Copy
 	ENDM
 	
-	ENDC	; end definition of DMA.inc file
+	ENDC	; DMA_INC
