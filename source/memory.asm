@@ -31,6 +31,7 @@
 ;*    Entry: hl = start address, de = end address, bc = length
 ;*
 
+        
 ;If all of these are already defined, don't do it again.
 
         IF      !DEF(MEMORY_ASM)
@@ -181,7 +182,6 @@ mem_CopyVRAM::
 	dec	b
 	jr	nz,.loop
 	ret
-
 
 
         ENDC    ; MEMORY_ASM
