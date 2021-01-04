@@ -1,101 +1,112 @@
 ;;;;	main.asm
 ;;;;	Program main assembly file
 
-include "gbhw.inc"	 
-include "myboy.inc"     
-include "ibmpc1.inc"	 
+    INCLUDE "myboy/gbhw.inc"
+    INCLUDE "myboy/sprite.inc"     
+    INCLUDE "myboy/ibmpc1.inc"
+    INCLUDE "myboy/debug.inc"
+    INCLUDE "myboy/dma.inc"
 
 SECTION "ROM_ENTRY", ROM0[$0100]	
-	nop
-	jp	code
+    nop
+    jp	init
 
 SECTION "ROM_HEADER", ROM0[$0104]
-	NINTENDO_LOGO	; add nintendo logo. Required to run on real hardware
-	ROM_HEADER	"DUNGEON SCROLLS"
+    NINTENDO_LOGO	; add nintendo logo. Required to run on real hardware
+    ROM_HEADER	"DUNGEON SCROLLS"
         
 
+
+EMPTY_TILE      SET     $20        
+
+        
 SECTION "Main Code", ROM0
-;; Declarations
-        var_Def         jpad_keys, 1
-	spr_Struct      copyright        
-        
-code:                           ;
-	di			; Disable interrupts
-	ld	SP, $FFFF	; Set stack to top of HRAM
+init:                          
+    di			; Disable interrupts
+    ld	SP, $E000	; Set stack to top of RAM
 	
-	dma_CopyToHRAM		; Copy DMA Routine to HRAM
+    dma_CopyToHRAM      ; Copy DMA Routine to HRAM
+    
+    call lcd_Off
+    
+    ;; Copy Tiles to VRAM
+    ld      hl, ascii_tiles
+    ld      de, _VRAM
+    ld      bc, ascii_tiles_end - ascii_tiles
+    call    mem_CopyMono
+
+    ;; Clear Screen
+    ld      a, EMPTY_TILE
+    ld      hl, _SCRN0
+    ld      bc, SCRN_VX_B * SCRN_VY_B
+    call    mem_SetVRAM
+
+    ld      hl, text1
+    ld      de, _SCRN0 + (6 * SCRN_VX_B) + 2
+    ld      bc, text2 - text1
+    call    mem_CopyVRAM
+    ld      hl, text2
+    ld      de, _SCRN0 + (7 * SCRN_VX_B) + 4
+    ld      bc, text3 - text2
+    call    mem_CopyVRAM
+    ld      hl, text3
+    ld      de, _SCRN0 + (9 * SCRN_VX_B) + 8
+    ld      bc, text_end - text3
+    call    mem_CopyVRAM
         
-        call    lcd_Stop
+    call    lcd_On
 
-        ;; Copy Tiles to VRAM
-        ld      hl, ascii_tiles
-        ld      de, _VRAM
-        ld      bc, ascii_tiles_end - ascii_tiles
-        call    mem_CopyMono
+    ;; Clear OAM Shadow
+    ld      a, 0
+    ld      hl, OAM_SHADOW_LOC
+    ld      bc, 40*4
+    call    mem_Set
 
-        ;; Clear Screen
-        ld      a, $20
-        ld      hl, _SCRN0
-        ld      bc, SCRN_VX_B * SCRN_VY_B
-        call    mem_SetVRAM
+    ;; Enable Objects and Window
+    ld	a, [rLCDC]
+    or	LCDCF_OBJON | LCDCF_OBJ8
+    ld      [rLCDC], a
 
-        ld      hl, text
-        ld      de, _SCRN0 + (8 * SCRN_VX_B + 6)
-        ld      bc, text_end - text
-        call    mem_CopyVRAM
+    call    player_init
+
+    ;; Set palette
+    ld      a, %11100100
+    ld      [rBGP], a
+    ld      [rOBP0],a
+    ld      [rOBP1],a
+
+    ;; call    map_GenMap      
         
-        call    lcd_On
-
-        ;; Clear OAM Shadow
-        ld      a, 0
-        ld      hl, OAMSHADOWLOC
-        ld      bc, 40*4
-        call    mem_Set
-
-        ;; Enable Objects
-	ld	a, [rLCDC]	
-	or	LCDCF_OBJON | LCDCF_OBJ8
-	ld      [rLCDC], a
+    ;; Enable VBlank
+    ld	a, IEF_VBLANK 
+    ld 	[rIE], a
+    ei
         
-        ;; Write to OAM
-        spr_Put copyright, XAddr, 8
-	spr_Put	copyright, YAddr, 16
-        spr_Put	copyright, Tile,  $40
-	spr_Put	copyright, Flags, $00
+mainloop:       
+    halt
+    nop
 
-        ;; Enable VBlank
-	ld	a, IEF_VBLANK 
-	ld 	[rIE], a
-	ei
- 
-.mainloop
-	halt
-	nop
-
-        ld      a,      [jpad_keys]
-        or      0
-        jr      nz, .skip_move
-        
-        call    jpad_GetKeys
-        spr_MoveIfLeft  copyright, 8
-        spr_MoveIfRight copyright, 8
-        spr_MoveIfDown  copyright, 8
-        spr_MoveIfUp    copyright, 8
-        
-.skip_move
-        call    jpad_GetKeys
-        ld      [jpad_keys], a  
+    ;; ld      a, [rSCX]
+    ;; inc     a
+    ;; ld      [rSCX], a
+    
+    call    player_move
        
-        jr      .mainloop
-        
+    jr      mainloop
 
+        
+        
 SECTION "Data", ROM0
 
-text:
-        DB      "Hello World"
+text1:
+    DB  "Christina ist"
+text2:  
+    DB  "die beste!"
+text3:
+    DB  "( ^w^)"
 text_end:       
         
 ascii_tiles:
-        chr_IBMPC1      1, 8
+    chr_IBMPC1  1, 8
 ascii_tiles_end:
 ;-------------------- DATA -------------------------------------------------------

@@ -1,10 +1,10 @@
 ;;; -------------------------------------------------------------------------------
 ;;; LCD Control
 ;;; -------------------------------------------------------------------------------
-        IF      !DEF(LCD_ASM)
+    IF      !DEF(LCD_ASM)
 LCD_ASM SET  1
 
-        INCLUDE "gbhw.inc"
+    INCLUDE "gbhw.inc"
 
         
 SECTION "LCD Code", ROM0
@@ -14,18 +14,18 @@ SECTION "LCD Code", ROM0
 ;* lcd_Stop - Turns of LCD after current pixel transfer is finished
 ;*
 ;***************************************************************************
-lcd_Stop::
-        ld      a, [rLCDC]
-        and     LCDCF_ON
-        ret     z
-.waitvblank
+lcd_Off::
+    ld      a, [rLCDC]
+    and     LCDCF_ON
+    ret     z
+    .waitvblank
         ldh     a, [rLY]
         cp      145
         jr      nz, .waitvblank
-        ld      a, [rLCDC]
-        xor     LCDCF_ON
-        ld      [rLCDC], a
-        ret
+    ld      a, [rLCDC]
+    xor     LCDCF_ON
+    ld      [rLCDC], a
+    ret
 
 
 ;***************************************************************************
@@ -34,12 +34,11 @@ lcd_Stop::
 ;*
 ;***************************************************************************
 lcd_On::
-        ld      a,[rLCDC]
-        or      LCDCF_ON
-        ld      [rLCDC], a
-        ret
-
+    ld      a,[rLCDC]
+    or      LCDCF_ON
+    ld      [rLCDC], a
+    ret
 
         
-        ENDC ; LCD_ASM
+    ENDC ; LCD_ASM
 ;;; -------------------------------------------------------------------------------     

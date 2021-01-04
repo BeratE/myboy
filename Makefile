@@ -40,7 +40,8 @@ OBJECT_FILES  := $(patsubst $(SRC_DIR)/%, $(OBJ_DIR)/%, $(SOURCE_FILES:.$(SRC_EX
 
 
 # Targets
-.PHONY: all test clean rebuild directories
+.PHONY: bl all test clean rebuild directories
+
 
 all: directories $(TARGET)
 
@@ -58,6 +59,7 @@ directories: $(OBJ_DIR) $(BIN_DIR)
 
 $(OBJ_DIR):
 	mkdir -p $@
+	mkdir -p $@/myboy
 $(BIN_DIR):
 	mkdir -p $@
 
